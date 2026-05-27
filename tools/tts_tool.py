@@ -2097,8 +2097,16 @@ def text_to_speech_tool(
             if opus_path:
                 file_str = opus_path
                 voice_compatible = True
-        elif provider in {"elevenlabs", "openai", "mistral", "gemini"}:
-            voice_compatible = want_opus and file_str.endswith(".ogg")
+        elif provider in {"elevenlabs", "openai", "gemini"}:
+            # Native Opus providers: mark as voice-compatible when the
+            # output is already .ogg or we can convert to Opus via ffmpeg.
+            if not file_str.endswith(".ogg"):
+                opus_path = _convert_to_opus(file_str)
+                if opus_path:
+                    file_str = opus_path
+                    voice_compatible = True
+            else:
+                voice_compatible = True
 
         file_size = os.path.getsize(file_str)
         logger.info("TTS audio saved: %s (%s bytes, provider: %s)", file_str, f"{file_size:,}", provider)

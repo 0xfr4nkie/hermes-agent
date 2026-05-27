@@ -11375,11 +11375,13 @@ class GatewayRunner:
             if not tts_text:
                 return
 
-            # Use .mp3 extension so edge-tts conversion to opus works correctly.
-            # The TTS tool may convert to .ogg — use file_path from result.
+            # Use .ogg extension so Gemini/ElevenLabs produce Opus format and
+            # the Telegram adapter routes to send_voice (inline bubble) instead
+            # of send_audio (file download).  Gemini with ffmpeg at the helm
+            # converts raw WAV → Opus automatically.
             audio_path = os.path.join(
                 tempfile.gettempdir(), "hermes_voice",
-                f"tts_reply_{_uuid.uuid4().hex[:12]}.mp3",
+                f"tts_reply_{_uuid.uuid4().hex[:12]}.ogg",
             )
             os.makedirs(os.path.dirname(audio_path), exist_ok=True)
 
